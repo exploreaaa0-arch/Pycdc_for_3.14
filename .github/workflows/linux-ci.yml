@@ -1,0 +1,39 @@
+name: Linux-CI
+
+on:
+  push:
+    branches: [__main__]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Configure and Build Debug
+        run: |
+          mkdir build-debug && cd build-debug
+          cmake -DCMAKE_BUILD_TYPE=Debug ..
+          make -j4
+
+      - name: Configure and Build Release
+        run: |
+          mkdir build-release && cd build-release
+          cmake -DCMAKE_BUILD_TYPE=Release ..
+          make -j4
+
+      - name: Test Debug
+        run: cmake --build build-debug --target check
+
+      - name: Test Release
+        run: cmake --build build-release --target check
+
+      - name: Upload Release Executables
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: pycdc-release
+          path: build-release/*

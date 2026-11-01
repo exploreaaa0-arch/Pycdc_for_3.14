@@ -1,0 +1,35 @@
+name: MSVC-CI
+on:
+  push:
+    branches: [ __main__ ]
+  pull_request:
+    branches: [ __main__ ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Configure and Build
+        run: |
+          mkdir build
+          cd build
+          cmake -A Win32 ..
+          cmake --build . --config Debug
+          cmake --build . --config Release
+      - name: Run Tests (Debug)
+        run: cmake --build build --config Debug --target RUN_TESTS || cmake --build build --config Debug --target check
+      - name: Run Tests (Release)
+        run: cmake --build build --config Release --target RUN_TESTS || cmake --build build --config Release --target check
+      - name: Upload Release Executables
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: pycdc-release
+          path: build\Release\*.exe
+          
